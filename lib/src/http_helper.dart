@@ -24,7 +24,16 @@ class HttpHelper {
   static Map<String, dynamic> defaultParams = {};
 
   /// Callbacks that can be assigned to handle different states of the HTTP request.
-  static Function? onBeforeSend, onAfterSend, onException, onTimeout;
+  static Function(GenericResponse)? onAfterSend;
+
+  /// Callbacks that can be assigned to handle different states of the HTTP request.
+  static Function(Exception)? onException;
+
+  /// Callbacks that can be assigned to handle different states of the HTTP request.
+  static Function? onBeforeSend;
+
+  /// Callbacks that can be assigned to handle different states of the HTTP request.
+  static Function? onTimeout;
 
   /// Main function to make an HTTP request and return a `GenericResponse`.
   static Future<GenericResponse<T>> makeRequest<T>(String url, String path, HttpRequestMethod httpRequestMethod, T Function(dynamic response) converter,
@@ -43,11 +52,9 @@ class HttpHelper {
 
       // Make the HTTP request based on the specified method
       final response = await _httpRequest(httpRequestMethod, uri, header);
-
-      onAfterSend?.call(); // Call onAfterSend if it's not null
       return _handleResponse(response, converter); // Handle the HTTP response
     } on Exception catch (e) {
-      onException?.call(); // Call onException if it's not null
+      onException?.call(e); // Call onException if it's not null
       return httpExceptionError<T>(e); // Handle exception during HTTP request
     }
   }
@@ -80,18 +87,26 @@ class HttpHelper {
       } catch (_) {
         print(body);
       }
-      return GenericResponse(
+      final genResponse = GenericResponse(
         data: converter(nullableJson),
         statusCode: response.statusCode,
       );
+
+      onAfterSend?.call(genResponse); // Call onAfterSend if it's not null
+
+      return genResponse;
     } else {
       // Handle non-successful HTTP response
       var message = response.bodyBytes.isEmpty ? "No message provided" : jsonDecode(body);
-      return GenericResponse(
+      final genResponse = GenericResponse(
         // If status code is 999, it means there was a timeout
         error: response.statusCode == 999 ? HttpError(message: "Timeout Error") : HttpError.fromJson(message),
         statusCode: response.statusCode,
       );
+
+      onAfterSend?.call(genResponse); // Call onAfterSend if it's not null
+
+      return genResponse as GenericResponse<T>;
     }
   }
 

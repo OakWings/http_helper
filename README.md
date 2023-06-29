@@ -72,17 +72,20 @@ print(response.data);
 
 ## Example 3: Using Callbacks
 ```dart
+HttpHelper.defaultHeaders = {"App-Language": "en"};
+HttpHelper.timeoutDurationSeconds = 5;
+
 // Set callback functions
 HttpHelper.onBeforeSend = () {
   print("Request is about to be sent");
 };
 
-HttpHelper.onAfterSend = () {
-  print("Request has been sent");
+HttpHelper.onAfterSend = (GenericResponse response) {
+  print("Request has been sent, received response: ${response.statusCode}");
 };
 
-HttpHelper.onException = () {
-  print("An exception occurred");
+HttpHelper.onException = (Exception e) {
+  print("An exception occurred: ${e.toString()}");
 };
 
 HttpHelper.onTimeout = () {
