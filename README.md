@@ -24,7 +24,7 @@ Whether you're building a large-scale client application, or you just need to ma
 
 # Examples:
 
-## Example 1: GET Request with an objects as response
+## Example 1: GET Request with an object as response
 ```dart
 import 'package:http_helper/http_helper.dart';
 
