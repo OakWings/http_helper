@@ -102,9 +102,8 @@ class HttpHelper {
   static GenericResponse<T> _handleResponse<T>(
       http.Response response, T Function(dynamic response) converter) {
     var body = const Utf8Decoder().convert(response.bodyBytes);
-    if (response.statusCode == 200 ||
-        response.statusCode == 201 ||
-        response.statusCode == 204) {
+    // If status code is in 200 range, the request was successful
+    if (response.statusCode >= 200 && response.statusCode < 300) {
       // Handle successful HTTP response
       dynamic nullableJson;
       try {

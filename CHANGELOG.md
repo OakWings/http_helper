@@ -1,4 +1,9 @@
+## 1.0.2
+
+- All 2xx status codes will now be treated as successful.
+
 ## 1.0.1
+
 - Updated the package description to meet the required 60 to 180 character length requirement.
 - Formatted the code with the Dart formatter to comply with the requirements of the pub.dev analyzer.
 
