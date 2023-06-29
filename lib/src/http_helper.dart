@@ -53,9 +53,10 @@ class HttpHelper {
       final params = {...defaultParams, ...?queryParameters};
       final header = {...defaultHeaders, ...?headers};
 
-      if (httpRequestMethod == HttpRequestMethod.get)
-        header.remove(
-            "Content-Type"); // "Content-Type" is removed for GET requests
+      if (httpRequestMethod == HttpRequestMethod.get) {
+        // "Content-Type" is removed for GET requests
+        header.remove("Content-Type");
+      }
 
       // Construct the URI for the request
       final uri = Uri.https(url, path, params.isEmpty ? null : params);
