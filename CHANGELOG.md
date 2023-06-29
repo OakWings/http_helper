@@ -1,9 +1,9 @@
 ## 1.0.3
 
-- Fixed a bug where it threw an exception when using integers in query parameters.
-- Fixed a bug where error.message was null, even though this should never happen.
-- Updated example
-- Updated examples in readme
+- Fixed a bug that caused an exception to be thrown when using integers in query parameters.
+- Fixed a bug where `error.message` was null, despite it should never happen.
+- Updated the example.
+- Updated the examples in the readme.
 
 ## 1.0.2
 
