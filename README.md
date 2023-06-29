@@ -24,86 +24,160 @@ Whether you're building a large-scale client application, or you just need to ma
 
 # Examples:
 
-## Example 1: GET Request
+## Example 1: GET Request with an objects as response
 ```dart
-// Define the URL and path
-String url = 'https://jsonplaceholder.typicode.com';
-String path = '/posts';
+import 'package:http_helper/http_helper.dart';
 
-// Make a GET request
-var response = await HttpHelper.makeRequest<Map<String, dynamic>>(
-  url,
-  path,
-  HttpRequestMethod.get,
-  (res) => res as Map<String, dynamic>,
-);
+import 'typicode_model.dart';
 
-// Print the response data
-print(response.data);
+void main() async {
+  // Define the URL and path
+  String url = 'jsonplaceholder.typicode.com';
+  String path = '/posts/1';
+
+  // Make a GET request
+  var response = await HttpHelper.makeRequest<TypicodeModel>(
+    url,
+    path,
+    HttpRequestMethod.get,
+    (response) => TypicodeModel.fromJson(response),
+  );
+
+  print(response.statusCode);
+
+  // Print the response data
+  if (response.isSuccess) {
+    print(response.data.toString());
+  } else {
+    // Note: when not response.isSuccess, error and message will never be null, so it is save to access them!
+    print(response.error!.message!);
+  }
+}
+```
+
+## Example 2: GET Request with a list of objects as response
+```dart
+import 'package:http_helper/http_helper.dart';
+
+import 'typicode_model.dart';
+
+void main() async {
+  // Define the URL and path
+  String url = 'jsonplaceholder.typicode.com';
+  String path = '/posts';
+
+  // Make a GET request
+  var response = await HttpHelper.makeRequest<List<TypicodeModel>>(
+      url, path, HttpRequestMethod.get, (response) {
+    var responseList = response as List;
+    var mappedList = responseList
+        .map((e) => e == null
+            ? null
+            : TypicodeModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+    var withoutNulls =
+        List<TypicodeModel>.from(mappedList.where((e) => e != null));
+    return withoutNulls;
+  });
+
+  print(response.statusCode);
+
+  // Print the response data
+  if (response.isSuccess) {
+    print(response.data);
+  } else {
+    // Note: when not response.isSuccess, error and message will never be null, so it is save to access them!
+    print(response.error!.message!);
+  }
+}
 ```
 
 ## Example 2: POST Request with Headers and Query Parameters
 ```dart
+import 'package:http_helper/http_helper.dart';
+
+import 'typicode_model.dart';
+
+void main() async {
 // Define the URL, path, headers and query parameters
-String url = 'https://jsonplaceholder.typicode.com';
-String path = '/posts';
-Map<String, String> headers = {
-  "Authorization": "Bearer your_token_here"
-};
-Map<String, dynamic> queryParams = {
-  "userId": 1,
-  "title": "Test Title",
-  "body": "Test Body"
-};
+  String url = 'jsonplaceholder.typicode.com';
+  String path = '/posts';
+  Map<String, String> headers = {"Authorization": "Bearer your_token_here"};
+  Map<String, dynamic> queryParams = {
+    "userId": 1,
+    "title": "Test Title",
+    "body": "Test Body"
+  };
 
 // Make a POST request
-var response = await HttpHelper.makeRequest<Map<String, dynamic>>(
-  url,
-  path,
-  HttpRequestMethod.post,
-  (res) => res as Map<String, dynamic>,
-  headers: headers,
-  queryParameters: queryParams
-);
+  var response = await HttpHelper.makeRequest<TypicodeModel>(url, path,
+      HttpRequestMethod.post, (response) => TypicodeModel.fromJson(response),
+      headers: headers, queryParameters: queryParams);
+
+  print(response.statusCode);
 
 // Print the response data
-print(response.data);
+  if (response.isSuccess) {
+    print(response.data);
+  } else {
+    // Note: when not response.isSuccess, error and message will never be null, so it is save to access them!
+    print(response.error!.message!);
+  }
+}
+
 ```
 
 ## Example 3: Using Callbacks
 ```dart
-HttpHelper.defaultHeaders = {"App-Language": "en"};
-HttpHelper.timeoutDurationSeconds = 5;
+import 'package:http_helper/http_helper.dart';
 
-// Set callback functions
-HttpHelper.onBeforeSend = () {
-  print("Request is about to be sent");
-};
+import 'typicode_model.dart';
 
-HttpHelper.onAfterSend = (GenericResponse response) {
-  print("Request has been sent, received response: ${response.statusCode}");
-};
+void main() async {
+  HttpHelper.defaultHeaders = {"App-Language": "en"};
+  HttpHelper.timeoutDurationSeconds = 5;
 
-HttpHelper.onException = (Exception e) {
-  print("An exception occurred: ${e.toString()}");
-};
+  // Set callback functions
+  HttpHelper.onBeforeSend = () {
+    print("Request is about to be sent");
+  };
 
-HttpHelper.onTimeout = () {
-  print("Request timed out");
-};
+  HttpHelper.onAfterSend = (GenericResponse response) {
+    print("Request has been sent, received response: ${response.statusCode}");
+  };
 
-// Define the URL and path
-String url = 'https://jsonplaceholder.typicode.com';
-String path = '/posts';
+  HttpHelper.onException = (Exception e) {
+    print("An exception occurred: ${e.toString()}");
+  };
 
-// Make a GET request
-var response = await HttpHelper.makeRequest<Map<String, dynamic>>(
-  url,
-  path,
-  HttpRequestMethod.get,
-  (res) => res as Map<String, dynamic>,
-);
+  HttpHelper.onTimeout = () {
+    print("Request timed out");
+  };
 
-// Print the response data
-print(response.data);
+  // Define the URL and path
+  String url = 'jsonplaceholder.typicode.com';
+  String path = '/posts';
+
+  // Make a GET request
+  var response = await HttpHelper.makeRequest<List<TypicodeModel>>(
+      url, path, HttpRequestMethod.get, (response) {
+    var responseList = response as List;
+    var mappedList = responseList
+        .map((e) => e == null
+            ? null
+            : TypicodeModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+    var withoutNulls =
+        List<TypicodeModel>.from(mappedList.where((e) => e != null));
+    return withoutNulls;
+  });
+
+  // Print the response data
+  if (response.isSuccess) {
+    print(response.data);
+  } else {
+    // Note: when not response.isSuccess, error and message will never be null, so it is save to access them!
+    print(response.error!.message!);
+  }
+}
 ```

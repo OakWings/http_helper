@@ -1,38 +1,30 @@
 import 'package:http_helper/http_helper.dart';
 
+import 'typicode_model.dart';
+
 void main() async {
-  HttpHelper.defaultHeaders = {"App-Language": "en"};
-  HttpHelper.timeoutDurationSeconds = 5;
-
-  // Set callback functions
-  HttpHelper.onBeforeSend = () {
-    print("Request is about to be sent");
-  };
-
-  HttpHelper.onAfterSend = (GenericResponse response) {
-    print("Request has been sent, received response: ${response.statusCode}");
-  };
-
-  HttpHelper.onException = (Exception e) {
-    print("An exception occurred: ${e.toString()}");
-  };
-
-  HttpHelper.onTimeout = () {
-    print("Request timed out");
-  };
-
-  // Define the URL and path
-  String url = 'https://jsonplaceholder.typicode.com';
+// Define the URL, path, headers and query parameters
+  String url = 'jsonplaceholder.typicode.com';
   String path = '/posts';
+  Map<String, String> headers = {"Authorization": "Bearer your_token_here"};
+  Map<String, dynamic> queryParams = {
+    "userId": 1,
+    "title": "Test Title",
+    "body": "Test Body"
+  };
 
-  // Make a GET request
-  var response = await HttpHelper.makeRequest<Map<String, dynamic>>(
-    url,
-    path,
-    HttpRequestMethod.get,
-    (res) => res as Map<String, dynamic>,
-  );
+// Make a POST request
+  var response = await HttpHelper.makeRequest<TypicodeModel>(url, path,
+      HttpRequestMethod.post, (response) => TypicodeModel.fromJson(response),
+      headers: headers, queryParameters: queryParams);
 
-  // Print the response data
-  print(response.data);
+  print(response.statusCode);
+
+// Print the response data
+  if (response.isSuccess) {
+    print(response.data);
+  } else {
+    // Note: when not response.isSuccess, error and message will never be null, so it is save to access them!
+    print(response.error!.message!);
+  }
 }

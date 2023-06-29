@@ -58,8 +58,16 @@ class HttpHelper {
         header.remove("Content-Type");
       }
 
+      // Convert all values in params to String because in Dart,
+      // the Uri.https method expects the query parameters to be a Map<String, dynamic>,
+      // where the dynamic type can be String or Iterable<String>.
+      // If you provide a value that is not a String or Iterable<String>, you will get a TypeError.
+      final stringParams = params.map(
+        (key, value) => MapEntry(key, value.toString()),
+      );
+
       // Construct the URI for the request
-      final uri = Uri.https(url, path, params.isEmpty ? null : params);
+      final uri = Uri.https(url, path, params.isEmpty ? null : stringParams);
 
       // Make the HTTP request based on the specified method
       final response = await _httpRequest(httpRequestMethod, uri, header);
@@ -108,22 +116,23 @@ class HttpHelper {
       dynamic nullableJson;
       try {
         nullableJson = jsonDecode(body);
-      } catch (_) {
+        final genResponse = GenericResponse(
+          data: converter(nullableJson),
+          statusCode: response.statusCode,
+        );
+
+        onAfterSend?.call(genResponse); // Call onAfterSend if it's not null
+
+        return genResponse;
+      } on Exception catch (e) {
         print(body);
+        return httpExceptionError<T>(e);
       }
-      final genResponse = GenericResponse(
-        data: converter(nullableJson),
-        statusCode: response.statusCode,
-      );
-
-      onAfterSend?.call(genResponse); // Call onAfterSend if it's not null
-
-      return genResponse;
     } else {
       // Handle non-successful HTTP response
       var message =
           response.bodyBytes.isEmpty ? "No message provided" : jsonDecode(body);
-      final genResponse = GenericResponse(
+      final genResponse = GenericResponse<T>(
         // If status code is 999, it means there was a timeout
         error: response.statusCode == 999
             ? HttpError(message: "Timeout Error")
@@ -133,7 +142,10 @@ class HttpHelper {
 
       onAfterSend?.call(genResponse); // Call onAfterSend if it's not null
 
-      return genResponse as GenericResponse<T>;
+      if (genResponse.error!.message == null) {
+        genResponse.error!.message = "No message provided";
+      }
+      return genResponse;
     }
   }
 
@@ -144,10 +156,10 @@ class HttpHelper {
   }
 
   /// Handles a caught exception during HTTP request by returning a `GenericResponse` with an `HttpError`.
-  static Future<GenericResponse<T>> httpExceptionError<T>(Exception e) {
+  static GenericResponse<T> httpExceptionError<T>(Exception e) {
     // Return a GenericResponse with an HttpError containing the exception message
-    return Future<GenericResponse<T>>.value(GenericResponse<T>(
+    return GenericResponse<T>(
         error: HttpError(message: "Http exception:\n${e.toString()}"),
-        statusCode: -1));
+        statusCode: -1);
   }
 }

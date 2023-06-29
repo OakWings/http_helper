@@ -1,3 +1,10 @@
+## 1.0.3
+
+- Fixed a bug where it threw an exception when using integers in query parameters.
+- Fixed a bug where error.message was null, even though this should never happen.
+- Updated example
+- Updated examples in readme
+
 ## 1.0.2
 
 - All 2xx status codes will now be treated as successful.
