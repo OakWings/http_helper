@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http_helper/src/generic_response.dart';
 import 'package:http_helper/src/http_error.dart';
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 
 /// An enumeration of HTTP request methods.
 enum HttpRequestMethod {
@@ -60,24 +60,24 @@ class HttpHelper {
   }
 
   /// Makes an HTTP request based on the provided method, uri, and headers.
-  static Future<Response> _httpRequest(HttpRequestMethod method, Uri uri, Map<String, String> headers) {
+  static Future<http.Response> _httpRequest(HttpRequestMethod method, Uri uri, Map<String, String> headers) {
     switch (method) {
       // Each HTTP method corresponds to an HTTP request
       case HttpRequestMethod.get:
-        return get(uri, headers: headers).timeout(Duration(seconds: timeoutDurationSeconds), onTimeout: httpTimeoutError);
+        return http.get(uri, headers: headers).timeout(Duration(seconds: timeoutDurationSeconds), onTimeout: httpTimeoutError);
       case HttpRequestMethod.post:
-        return post(uri, headers: headers).timeout(Duration(seconds: timeoutDurationSeconds), onTimeout: httpTimeoutError);
+        return http.post(uri, headers: headers).timeout(Duration(seconds: timeoutDurationSeconds), onTimeout: httpTimeoutError);
       case HttpRequestMethod.put:
-        return put(uri, headers: headers).timeout(Duration(seconds: timeoutDurationSeconds), onTimeout: httpTimeoutError);
+        return http.put(uri, headers: headers).timeout(Duration(seconds: timeoutDurationSeconds), onTimeout: httpTimeoutError);
       case HttpRequestMethod.patch:
-        return patch(uri, headers: headers).timeout(Duration(seconds: timeoutDurationSeconds), onTimeout: httpTimeoutError);
+        return http.patch(uri, headers: headers).timeout(Duration(seconds: timeoutDurationSeconds), onTimeout: httpTimeoutError);
       case HttpRequestMethod.delete:
-        return delete(uri, headers: headers).timeout(Duration(seconds: timeoutDurationSeconds), onTimeout: httpTimeoutError);
+        return http.delete(uri, headers: headers).timeout(Duration(seconds: timeoutDurationSeconds), onTimeout: httpTimeoutError);
     }
   }
 
   /// Handles the HTTP response and converts it into a `GenericResponse`.
-  static GenericResponse<T> _handleResponse<T>(Response response, T Function(dynamic response) converter) {
+  static GenericResponse<T> _handleResponse<T>(http.Response response, T Function(dynamic response) converter) {
     var body = const Utf8Decoder().convert(response.bodyBytes);
     if (response.statusCode == 200 || response.statusCode == 201 || response.statusCode == 204) {
       // Handle successful HTTP response
@@ -111,9 +111,9 @@ class HttpHelper {
   }
 
   /// Handles the HTTP timeout error by returning a `Response` with a custom status code.
-  static FutureOr<Response> httpTimeoutError() {
+  static FutureOr<http.Response> httpTimeoutError() {
     onTimeout?.call(); // Call onTimeout if it's not null
-    return Response("", 999); // Return custom response for timeout
+    return http.Response("", 999); // Return custom response for timeout
   }
 
   /// Handles a caught exception during HTTP request by returning a `GenericResponse` with an `HttpError`.
