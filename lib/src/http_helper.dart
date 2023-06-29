@@ -39,7 +39,7 @@ class HttpHelper {
   static Function? onTimeout;
 
   /// Main function to make an HTTP request and return a `GenericResponse`.
-  static Future<GenericResponse<T>> makeRequest<T>(
+  static Future<GenericResponse<T>> sendRequest<T>(
       String url,
       String path,
       HttpRequestMethod httpRequestMethod,

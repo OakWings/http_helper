@@ -14,7 +14,7 @@ void main() async {
   };
 
 // Make a POST request
-  var response = await HttpHelper.makeRequest<TypicodeModel>(url, path,
+  var response = await HttpHelper.sendRequest<TypicodeModel>(url, path,
       HttpRequestMethod.post, (response) => TypicodeModel.fromJson(response),
       headers: headers, queryParameters: queryParams);
 

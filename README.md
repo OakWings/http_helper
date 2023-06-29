@@ -36,7 +36,7 @@ void main() async {
   String path = '/posts/1';
 
   // Make a GET request
-  var response = await HttpHelper.makeRequest<TypicodeModel>(
+  var response = await HttpHelper.sendRequest<TypicodeModel>(
     url,
     path,
     HttpRequestMethod.get,
@@ -67,7 +67,7 @@ void main() async {
   String path = '/posts';
 
   // Make a GET request
-  var response = await HttpHelper.makeRequest<List<TypicodeModel>>(
+  var response = await HttpHelper.sendRequest<List<TypicodeModel>>(
       url, path, HttpRequestMethod.get, (response) {
     var responseList = response as List;
     var mappedList = responseList
@@ -110,7 +110,7 @@ void main() async {
   };
 
 // Make a POST request
-  var response = await HttpHelper.makeRequest<TypicodeModel>(url, path,
+  var response = await HttpHelper.sendRequest<TypicodeModel>(url, path,
       HttpRequestMethod.post, (response) => TypicodeModel.fromJson(response),
       headers: headers, queryParameters: queryParams);
 
@@ -159,7 +159,7 @@ void main() async {
   String path = '/posts';
 
   // Make a GET request
-  var response = await HttpHelper.makeRequest<List<TypicodeModel>>(
+  var response = await HttpHelper.sendRequest<List<TypicodeModel>>(
       url, path, HttpRequestMethod.get, (response) {
     var responseList = response as List;
     var mappedList = responseList

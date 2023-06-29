@@ -1,3 +1,7 @@
+## 1.0.5
+
+- Renamed `makeRequest` to `sendRequest`
+
 ## 1.0.4
 
 - Renamed the file typicode_model.dart to typicode_model_example.dart to ensure it is displayed in the examples tab on pub.dev.
