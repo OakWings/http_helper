@@ -18,7 +18,10 @@ class HttpHelper {
   static int timeoutDurationSeconds = 10;
 
   /// Default headers for HTTP requests.
-  static Map<String, String> defaultHeaders = {"Content-Type": "application/json;charset=UTF-8", "Accept": "application/json"};
+  static Map<String, String> defaultHeaders = {
+    "Content-Type": "application/json;charset=UTF-8",
+    "Accept": "application/json"
+  };
 
   /// Default parameters for HTTP requests.
   static Map<String, dynamic> defaultParams = {};
@@ -36,8 +39,13 @@ class HttpHelper {
   static Function? onTimeout;
 
   /// Main function to make an HTTP request and return a `GenericResponse`.
-  static Future<GenericResponse<T>> makeRequest<T>(String url, String path, HttpRequestMethod httpRequestMethod, T Function(dynamic response) converter,
-      {Map<String, dynamic>? queryParameters, Map<String, String>? headers}) async {
+  static Future<GenericResponse<T>> makeRequest<T>(
+      String url,
+      String path,
+      HttpRequestMethod httpRequestMethod,
+      T Function(dynamic response) converter,
+      {Map<String, dynamic>? queryParameters,
+      Map<String, String>? headers}) async {
     try {
       onBeforeSend?.call(); // Call onBeforeSend if it's not null
 
@@ -45,7 +53,9 @@ class HttpHelper {
       final params = {...defaultParams, ...?queryParameters};
       final header = {...defaultHeaders, ...?headers};
 
-      if (httpRequestMethod == HttpRequestMethod.get) header.remove("Content-Type"); // "Content-Type" is removed for GET requests
+      if (httpRequestMethod == HttpRequestMethod.get)
+        header.remove(
+            "Content-Type"); // "Content-Type" is removed for GET requests
 
       // Construct the URI for the request
       final uri = Uri.https(url, path, params.isEmpty ? null : params);
@@ -60,26 +70,40 @@ class HttpHelper {
   }
 
   /// Makes an HTTP request based on the provided method, uri, and headers.
-  static Future<http.Response> _httpRequest(HttpRequestMethod method, Uri uri, Map<String, String> headers) {
+  static Future<http.Response> _httpRequest(
+      HttpRequestMethod method, Uri uri, Map<String, String> headers) {
     switch (method) {
       // Each HTTP method corresponds to an HTTP request
       case HttpRequestMethod.get:
-        return http.get(uri, headers: headers).timeout(Duration(seconds: timeoutDurationSeconds), onTimeout: httpTimeoutError);
+        return http.get(uri, headers: headers).timeout(
+            Duration(seconds: timeoutDurationSeconds),
+            onTimeout: httpTimeoutError);
       case HttpRequestMethod.post:
-        return http.post(uri, headers: headers).timeout(Duration(seconds: timeoutDurationSeconds), onTimeout: httpTimeoutError);
+        return http.post(uri, headers: headers).timeout(
+            Duration(seconds: timeoutDurationSeconds),
+            onTimeout: httpTimeoutError);
       case HttpRequestMethod.put:
-        return http.put(uri, headers: headers).timeout(Duration(seconds: timeoutDurationSeconds), onTimeout: httpTimeoutError);
+        return http.put(uri, headers: headers).timeout(
+            Duration(seconds: timeoutDurationSeconds),
+            onTimeout: httpTimeoutError);
       case HttpRequestMethod.patch:
-        return http.patch(uri, headers: headers).timeout(Duration(seconds: timeoutDurationSeconds), onTimeout: httpTimeoutError);
+        return http.patch(uri, headers: headers).timeout(
+            Duration(seconds: timeoutDurationSeconds),
+            onTimeout: httpTimeoutError);
       case HttpRequestMethod.delete:
-        return http.delete(uri, headers: headers).timeout(Duration(seconds: timeoutDurationSeconds), onTimeout: httpTimeoutError);
+        return http.delete(uri, headers: headers).timeout(
+            Duration(seconds: timeoutDurationSeconds),
+            onTimeout: httpTimeoutError);
     }
   }
 
   /// Handles the HTTP response and converts it into a `GenericResponse`.
-  static GenericResponse<T> _handleResponse<T>(http.Response response, T Function(dynamic response) converter) {
+  static GenericResponse<T> _handleResponse<T>(
+      http.Response response, T Function(dynamic response) converter) {
     var body = const Utf8Decoder().convert(response.bodyBytes);
-    if (response.statusCode == 200 || response.statusCode == 201 || response.statusCode == 204) {
+    if (response.statusCode == 200 ||
+        response.statusCode == 201 ||
+        response.statusCode == 204) {
       // Handle successful HTTP response
       dynamic nullableJson;
       try {
@@ -97,10 +121,13 @@ class HttpHelper {
       return genResponse;
     } else {
       // Handle non-successful HTTP response
-      var message = response.bodyBytes.isEmpty ? "No message provided" : jsonDecode(body);
+      var message =
+          response.bodyBytes.isEmpty ? "No message provided" : jsonDecode(body);
       final genResponse = GenericResponse(
         // If status code is 999, it means there was a timeout
-        error: response.statusCode == 999 ? HttpError(message: "Timeout Error") : HttpError.fromJson(message),
+        error: response.statusCode == 999
+            ? HttpError(message: "Timeout Error")
+            : HttpError.fromJson(message),
         statusCode: response.statusCode,
       );
 
@@ -119,6 +146,8 @@ class HttpHelper {
   /// Handles a caught exception during HTTP request by returning a `GenericResponse` with an `HttpError`.
   static Future<GenericResponse<T>> httpExceptionError<T>(Exception e) {
     // Return a GenericResponse with an HttpError containing the exception message
-    return Future<GenericResponse<T>>.value(GenericResponse<T>(error: HttpError(message: "Http exception:\n${e.toString()}"), statusCode: -1));
+    return Future<GenericResponse<T>>.value(GenericResponse<T>(
+        error: HttpError(message: "Http exception:\n${e.toString()}"),
+        statusCode: -1));
   }
 }

@@ -25,7 +25,8 @@ class HttpError {
   /// This factory constructor allows for the creation of an `HttpError`
   /// instance from a JSON map. This is useful when receiving an HTTP
   /// error in the form of JSON from an API.
-  factory HttpError.fromJson(Map<String, dynamic> json) => _$HttpErrorFromJson(json);
+  factory HttpError.fromJson(Map<String, dynamic> json) =>
+      _$HttpErrorFromJson(json);
 
   /// Converts the `HttpError` instance to a map.
   ///
