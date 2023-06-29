@@ -3,7 +3,7 @@ description: A simple, powerful HTTP networking library for Dart.
 
 
 version: 1.0.0+001000000
-#repository: https://github.com/my_org/my_repo
+repository: https://github.com/OakWings/http_helper
 
 environment:
   sdk: ^3.0.5
