@@ -1,6 +1,6 @@
 import 'package:http_helper/http_helper.dart';
 
-import 'typicode_model.dart';
+import 'typicode_model_example.dart';
 
 void main() async {
 // Define the URL, path, headers and query parameters

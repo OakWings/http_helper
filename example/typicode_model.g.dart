@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'typicode_model.dart';
+part of 'typicode_model_example.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
