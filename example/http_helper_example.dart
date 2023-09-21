@@ -5,18 +5,26 @@ import 'typicode_model_example.dart';
 void main() async {
 // Define the URL, path, headers and query parameters
   String url = 'jsonplaceholder.typicode.com';
-  String path = '/posts';
-  Map<String, String> headers = {"Authorization": "Bearer your_token_here"};
-  Map<String, dynamic> queryParams = {
-    "userId": 1,
-    "title": "Test Title",
-    "body": "Test Body"
-  };
+  String path = '/posts/1';
+
+// Define the body
+  final body = """
+    {
+      "userId": 1,
+      "id": 101,
+      "title": "foo",
+      "body": "bar"
+    }
+  """;
 
 // Make a POST request
-  var response = await HttpHelper.sendRequest<TypicodeModel>(url, path,
-      HttpRequestMethod.post, (response) => TypicodeModel.fromJson(response),
-      headers: headers, queryParameters: queryParams);
+  var response = await HttpHelper.sendRequest<TypicodeModel>(
+    url,
+    path,
+    HttpRequestMethod.put,
+    (response) => TypicodeModel.fromJson(response),
+    body: body,
+  );
 
   print(response.statusCode);
 

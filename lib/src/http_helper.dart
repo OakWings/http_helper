@@ -23,29 +23,43 @@ class HttpHelper {
     "Accept": "application/json"
   };
 
-  /// Default parameters for HTTP requests.
+  /// A map containing default query parameters that are included in every HTTP request.
   static Map<String, dynamic> defaultParams = {};
 
-  /// Callbacks that can be assigned to handle different states of the HTTP request.
+  /// A callback function that is invoked after an HTTP request has been sent and a response received.
+  /// This is typically used for any request operations like logging, analytics, or response transformation.
+  /// Note: onAfterSend will not be called when an exception occurs. When an exeption occurs, `onException` will be called instead.
+  ///
+  /// The `GenericResponse` object that has been received, will be passed automatically.
   static Function(GenericResponse)? onAfterSend;
 
-  /// Callbacks that can be assigned to handle different states of the HTTP request.
+  /// A callback function that is invoked when an exception occurs during the HTTP request process.
+  /// This is useful for centralized error handling, such as logging the exception or showing an error message to the user.
+  ///
+  /// The callback takes an `Exception` parameter, which contains details about the exception that occurred.
   static Function(Exception)? onException;
 
-  /// Callbacks that can be assigned to handle different states of the HTTP request.
+  /// A callback function that is invoked immediately before sending the HTTP request.
+  /// This can be used to log details, or execute any pre-send logic.
   static Function? onBeforeSend;
 
-  /// Callbacks that can be assigned to handle different states of the HTTP request.
+  /// A callback function that is invoked when an HTTP request times out.
+  /// This is typically used to handle timeout-specific logic, like retrying the request or
+  /// showing a timeout error message to the user.
+  ///
+  /// The callback function takes no parameters, and is invoked when the request exceeds the specified time limit: 'timeoutDurationSeconds'.
   static Function? onTimeout;
 
   /// Main function to make an HTTP request and return a `GenericResponse`.
   static Future<GenericResponse<T>> sendRequest<T>(
-      String url,
-      String path,
-      HttpRequestMethod httpRequestMethod,
-      T Function(dynamic response) converter,
-      {Map<String, dynamic>? queryParameters,
-      Map<String, String>? headers}) async {
+    String url,
+    String path,
+    HttpRequestMethod httpRequestMethod,
+    T Function(dynamic response) converter, {
+    String? body,
+    Map<String, dynamic>? queryParameters,
+    Map<String, String>? headers,
+  }) async {
     try {
       onBeforeSend?.call(); // Call onBeforeSend if it's not null
 
@@ -70,7 +84,7 @@ class HttpHelper {
       final uri = Uri.https(url, path, params.isEmpty ? null : stringParams);
 
       // Make the HTTP request based on the specified method
-      final response = await _httpRequest(httpRequestMethod, uri, header);
+      final response = await _httpRequest(httpRequestMethod, uri, header, body);
       return _handleResponse(response, converter); // Handle the HTTP response
     } on Exception catch (e) {
       onException?.call(e); // Call onException if it's not null
@@ -80,7 +94,11 @@ class HttpHelper {
 
   /// Makes an HTTP request based on the provided method, uri, and headers.
   static Future<http.Response> _httpRequest(
-      HttpRequestMethod method, Uri uri, Map<String, String> headers) {
+    HttpRequestMethod method,
+    Uri uri,
+    Map<String, String> headers,
+    String? body,
+  ) {
     switch (method) {
       // Each HTTP method corresponds to an HTTP request
       case HttpRequestMethod.get:
@@ -88,29 +106,29 @@ class HttpHelper {
             Duration(seconds: timeoutDurationSeconds),
             onTimeout: httpTimeoutError);
       case HttpRequestMethod.post:
-        return http.post(uri, headers: headers).timeout(
+        return http.post(uri, headers: headers, body: body).timeout(
             Duration(seconds: timeoutDurationSeconds),
             onTimeout: httpTimeoutError);
       case HttpRequestMethod.put:
-        return http.put(uri, headers: headers).timeout(
+        return http.put(uri, headers: headers, body: body).timeout(
             Duration(seconds: timeoutDurationSeconds),
             onTimeout: httpTimeoutError);
       case HttpRequestMethod.patch:
-        return http.patch(uri, headers: headers).timeout(
+        return http.patch(uri, headers: headers, body: body).timeout(
             Duration(seconds: timeoutDurationSeconds),
             onTimeout: httpTimeoutError);
       case HttpRequestMethod.delete:
-        return http.delete(uri, headers: headers).timeout(
+        return http.delete(uri, headers: headers, body: body).timeout(
             Duration(seconds: timeoutDurationSeconds),
             onTimeout: httpTimeoutError);
     }
   }
 
-  /// Handles the HTTP response and converts it into a `GenericResponse`.
+  /// Handles the HTTP response and converts it into a `GenericResponse`. Default encoding is UTF-8, this cannot be changed.
   static GenericResponse<T> _handleResponse<T>(
       http.Response response, T Function(dynamic response) converter) {
     var body = const Utf8Decoder().convert(response.bodyBytes);
-    // If status code is in 200 range, the request was successful
+    // If status code is in 200 range, the request is considered to be successful
     if (response.statusCode >= 200 && response.statusCode < 300) {
       // Handle successful HTTP response
       dynamic nullableJson;
@@ -130,8 +148,9 @@ class HttpHelper {
       }
     } else {
       // Handle non-successful HTTP response
-      var message =
-          response.bodyBytes.isEmpty ? "No message provided" : jsonDecode(body);
+      var message = response.bodyBytes.isEmpty
+          ? "No error message provided"
+          : jsonDecode(body);
       final genResponse = GenericResponse<T>(
         // If status code is 999, it means there was a timeout
         error: response.statusCode == 999
@@ -143,7 +162,7 @@ class HttpHelper {
       onAfterSend?.call(genResponse); // Call onAfterSend if it's not null
 
       if (genResponse.error!.message == null) {
-        genResponse.error!.message = "No message provided";
+        genResponse.error!.message = "No error message provided";
       }
       return genResponse;
     }

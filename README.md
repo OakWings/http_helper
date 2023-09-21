@@ -1,6 +1,6 @@
 # http_helper
 
-The `http_helper` is a powerful yet easy-to-use HTTP networking library for Dart, designed to encapsulate the complexities of making HTTP requests in client applications. 
+The `http_helper` is a powerful yet easy-to-use HTTP networking library for Dart, designed to encapsulate the complexities of making HTTP requests in client applications.
 
 This library provides a set of high-level API functions to send HTTP requests and receive responses. It wraps around the lower-level functionality of the `http` library, providing a simplified and more user-friendly interface for developers.
 
@@ -12,7 +12,7 @@ Key Features:
 
 3. **Timeouts:** The library includes built-in HTTP request timeout functionality to prevent requests from hanging indefinitely.
 
-4. **Callbacks:** It offers callback functions that can be set to handle different stages of an HTTP request. 
+4. **Callbacks/Middleware:** It offers callback/middleware functions that can be set to handle different stages of an HTTP request.
 
 5. **Default Headers and Parameters:** The library supports setting of default headers and parameters for HTTP requests, providing more convenience for developers who need to make many similar requests.
 
@@ -25,6 +25,7 @@ Whether you're building a large-scale client application, or you just need to ma
 # Examples:
 
 ## Example 1: GET Request with an object as response
+
 ```dart
 import 'package:http_helper/http_helper.dart';
 
@@ -49,13 +50,14 @@ void main() async {
   if (response.isSuccess) {
     print(response.data.toString());
   } else {
-    // Note: when not response.isSuccess, error and message will never be null, so it is save to access them!
+    // Note: when `response.isSuccess` is false, `error` and `message` will never be null, so it is save to access them!
     print(response.error!.message!);
   }
 }
 ```
 
 ## Example 2: GET Request with a list of objects as response
+
 ```dart
 import 'package:http_helper/http_helper.dart';
 
@@ -86,13 +88,14 @@ void main() async {
   if (response.isSuccess) {
     print(response.data);
   } else {
-    // Note: when not response.isSuccess, error and message will never be null, so it is save to access them!
+    // Note: when `response.isSuccess` is false, `error` and `message` will never be null, so it is save to access them!
     print(response.error!.message!);
   }
 }
 ```
 
 ## Example 2: POST Request with Headers and Query Parameters
+
 ```dart
 import 'package:http_helper/http_helper.dart';
 
@@ -120,14 +123,58 @@ void main() async {
   if (response.isSuccess) {
     print(response.data);
   } else {
-    // Note: when not response.isSuccess, error and message will never be null, so it is save to access them!
+    // Note: when `response.isSuccess` is false, `error` and `message` will never be null, so it is save to access them!
     print(response.error!.message!);
   }
 }
 
 ```
 
-## Example 3: Using Callbacks
+## Example 3: POST Request with Body
+
+```dart
+import 'package:http_helper/http_helper.dart';
+
+import 'typicode_model_example.dart';
+
+void main() async {
+// Define the URL, path, headers and query parameters
+  String url = 'jsonplaceholder.typicode.com';
+  String path = '/posts/1';
+
+// Define the body
+  final body = """
+    {
+      "userId": 1,
+      "id": 101,
+      "title": "foo",
+      "body": "bar"
+    }
+  """;
+
+// Make a POST request
+  var response = await HttpHelper.sendRequest<TypicodeModel>(
+    url,
+    path,
+    HttpRequestMethod.put,
+    (response) => TypicodeModel.fromJson(response),
+    body: body,
+  );
+
+  print(response.statusCode);
+
+// Print the response data
+  if (response.isSuccess) {
+    print(response.data);
+  } else {
+    // Note: when `response.isSuccess` is false, `error` and `message` will never be null, so it is save to access them!
+    print(response.error!.message!);
+  }
+}
+```
+
+## Example 4: Using Callbacks/Middleware to handle different stages of an HTTP request
+
 ```dart
 import 'package:http_helper/http_helper.dart';
 
@@ -176,7 +223,7 @@ void main() async {
   if (response.isSuccess) {
     print(response.data);
   } else {
-    // Note: when not response.isSuccess, error and message will never be null, so it is save to access them!
+    // Note: when `response.isSuccess` is false, `error` and `message` will never be null, so it is save to access them!
     print(response.error!.message!);
   }
 }

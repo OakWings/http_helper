@@ -1,3 +1,7 @@
+## 1.0.6
+
+- Added an optional body parameter to 'sendRequest'
+
 ## 1.0.5
 
 - Renamed `makeRequest` to `sendRequest`
