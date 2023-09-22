@@ -12,7 +12,7 @@ Key Features:
 
 3. **Timeouts:** The library includes built-in HTTP request timeout functionality to prevent requests from hanging indefinitely.
 
-4. **Callbacks/Middleware:** It offers callback/middleware functions that can be set to handle different stages of an HTTP request.
+4. **Middleware:** It offers middleware functions that can be set to handle different stages of an HTTP request: onBeforeSend, onAfterSend, onTimeout to name a few.
 
 5. **Default Headers and Parameters:** The library supports setting of default headers and parameters for HTTP requests, providing more convenience for developers who need to make many similar requests.
 
