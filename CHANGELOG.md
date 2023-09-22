@@ -1,4 +1,4 @@
-## 1.0.7
+## 1.1.0
 
 - GET requests are not allowed to have a body; therefore an info will now be printed to the console to inform the user.
 - A malformed response will now return a httpExceptionError instead of thwrowing an exception, making sure the app does not crash
