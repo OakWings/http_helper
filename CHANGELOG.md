@@ -1,3 +1,8 @@
+## 1.1.1
+
+- Improved doc comments
+- Cleaned up public api
+
 ## 1.1.0
 
 - GET requests are not allowed to have a body; therefore an info will now be printed to the console to inform the user.

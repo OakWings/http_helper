@@ -13,6 +13,8 @@ enum HttpRequestMethod {
   delete,
 }
 
+const _httpTimeoutErrorCode = 999;
+
 class HttpHelper {
   /// Default timeout duration in seconds for HTTP requests.
   static int timeoutDurationSeconds = 10;
@@ -29,7 +31,6 @@ class HttpHelper {
 
   /// A callback function that is invoked immediately before sending the HTTP request.
   /// This can be used to log details, or execute any pre-send logic.
-  ///
   /// onBeforeSend can return an HttpError which will be returned by sendRequest, or null.
   /// If an httpError is returned, the request will not be sent.
   /// This can be used to perform logic before the request is sent, e.g. check if a user is logged in, or if a token is valid, etc. .
@@ -38,24 +39,37 @@ class HttpHelper {
   /// A callback function that is invoked after an HTTP request has been sent and a response received.
   /// This is typically used for any request operations like logging, analytics, or response transformation.
   /// Note: onAfterSend will not be called when an exception occurs. When an exeption occurs, `onException` will be called instead.
-  ///
   /// The `GenericResponse` object that has been received, will be passed automatically.
   static Function(GenericResponse)? onAfterSend;
 
   /// A callback function that is invoked when an exception occurs during the HTTP request process.
   /// This is useful for centralized error handling, such as logging the exception or showing an error message to the user.
-  ///
   /// The callback takes an `Exception` parameter, which contains details about the exception that occurred.
   static Function(Exception)? onException;
 
   /// A callback function that is invoked when an HTTP request times out.
   /// This is typically used to handle timeout-specific logic, like retrying the request or
   /// showing a timeout error message to the user.
-  ///
   /// The callback function takes no parameters, and is invoked when the request exceeds the specified time limit: 'timeoutDurationSeconds'.
   static Function()? onTimeout;
 
-  /// Main function to make an HTTP request and return a `GenericResponse`.
+  /// Sends an HTTP request and returns a response wrapped in a `GenericResponse` object.
+  /// This method allows you to make HTTP requests with different request methods, headers, query parameters, and body content.
+  /// It internally handles the preparation of the HTTP request, merging default parameters and headers with provided custom ones,
+  /// and sending the request to the specified URL.
+  /// ### Type Parameters
+  /// - `T`: The type of the data that you expect in the response.
+  /// ### Parameters
+  /// - `url`: The base URL to which the request should be sent.
+  /// - `path`: The specific path within the base URL.
+  /// - `httpRequestMethod`: The HTTP method to use for making the request.
+  /// - `converter`: A function that takes a dynamic response and converts it into a type `T`.
+  /// ### Optional Named Parameters
+  /// - `body`: The HTTP request body, applicable for methods that allow a body (e.g., POST, PUT).
+  /// - `queryParameters`: A map containing query parameters to include in the request.
+  /// - `headers`: A map containing additional HTTP headers to include in the request.
+  /// ### Returns
+  /// A `Future<GenericResponse<T>>` containing the response data or error details.
   static Future<GenericResponse<T>> sendRequest<T>(
     String url,
     String path,
@@ -104,11 +118,11 @@ class HttpHelper {
       return _handleResponse(response, converter); // Handle the HTTP response
     } on Exception catch (e) {
       onException?.call(e); // Call onException if it's not null
-      return httpExceptionError<T>(e); // Handle exception during HTTP request
+      return _httpExceptionError<T>(e); // Handle exception during HTTP request
     }
   }
 
-  /// Makes an HTTP request based on the provided method, uri, and headers.
+  // Makes an HTTP request based on the provided method, uri, and headers.
   static Future<http.Response> _httpRequest(
     HttpRequestMethod method,
     Uri uri,
@@ -120,27 +134,27 @@ class HttpHelper {
       case HttpRequestMethod.get:
         return http.get(uri, headers: headers).timeout(
             Duration(seconds: timeoutDurationSeconds),
-            onTimeout: httpTimeoutError);
+            onTimeout: _httpTimeoutError);
       case HttpRequestMethod.post:
         return http.post(uri, headers: headers, body: body).timeout(
             Duration(seconds: timeoutDurationSeconds),
-            onTimeout: httpTimeoutError);
+            onTimeout: _httpTimeoutError);
       case HttpRequestMethod.put:
         return http.put(uri, headers: headers, body: body).timeout(
             Duration(seconds: timeoutDurationSeconds),
-            onTimeout: httpTimeoutError);
+            onTimeout: _httpTimeoutError);
       case HttpRequestMethod.patch:
         return http.patch(uri, headers: headers, body: body).timeout(
             Duration(seconds: timeoutDurationSeconds),
-            onTimeout: httpTimeoutError);
+            onTimeout: _httpTimeoutError);
       case HttpRequestMethod.delete:
         return http.delete(uri, headers: headers, body: body).timeout(
             Duration(seconds: timeoutDurationSeconds),
-            onTimeout: httpTimeoutError);
+            onTimeout: _httpTimeoutError);
     }
   }
 
-  /// Handles the HTTP response and converts it into a `GenericResponse`. Default encoding is UTF-8, this cannot be changed.
+  // Handles the HTTP response and converts it into a `GenericResponse`. Default encoding is UTF-8, this cannot be changed.
   static GenericResponse<T> _handleResponse<T>(
       http.Response response, T Function(dynamic response) converter) {
     String body = "";
@@ -149,7 +163,7 @@ class HttpHelper {
       body = const Utf8Decoder().convert(response.bodyBytes);
     } on Exception catch (e) {
       print(body);
-      return httpExceptionError<T>(e);
+      return _httpExceptionError<T>(e);
     }
 
     // If status code is in 200 range, the request is considered to be successful
@@ -168,7 +182,7 @@ class HttpHelper {
         return genResponse;
       } on Exception catch (e) {
         print(body);
-        return httpExceptionError<T>(e);
+        return _httpExceptionError<T>(e);
       }
     } else {
       // Handle non-successful HTTP response
@@ -176,8 +190,7 @@ class HttpHelper {
           ? "No error message provided"
           : jsonDecode(body);
       final genResponse = GenericResponse<T>(
-        // If status code is 999, it means there was a timeout
-        error: response.statusCode == 999
+        error: response.statusCode == _httpTimeoutErrorCode
             ? HttpError(message: "Timeout Error")
             : HttpError.fromJson(message),
         statusCode: response.statusCode,
@@ -192,17 +205,19 @@ class HttpHelper {
     }
   }
 
-  /// Handles the HTTP timeout error by returning a `Response` with a custom status code.
-  static FutureOr<http.Response> httpTimeoutError() {
+  // Handles the HTTP timeout error by returning a `Response` with a custom status code.
+  static FutureOr<http.Response> _httpTimeoutError() {
     onTimeout?.call(); // Call onTimeout if it's not null
-    return http.Response("", 999); // Return custom response for timeout
+    return http.Response(
+        "", _httpTimeoutErrorCode); // Return custom response for timeout
   }
 
-  /// Handles a caught exception during HTTP request by returning a `GenericResponse` with an `HttpError`.
-  static GenericResponse<T> httpExceptionError<T>(Exception e) {
+  // Handles a caught exception during HTTP request by returning a `GenericResponse` with an `HttpError`.
+  static GenericResponse<T> _httpExceptionError<T>(Exception e) {
     // Return a GenericResponse with an HttpError containing the exception message
     return GenericResponse<T>(
-        error: HttpError(message: "Http exception:\n${e.toString()}"),
-        statusCode: -1);
+      error: HttpError(message: "Http exception:\n${e.toString()}"),
+      statusCode: -1,
+    );
   }
 }
