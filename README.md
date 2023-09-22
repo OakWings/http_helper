@@ -184,9 +184,11 @@ void main() async {
   HttpHelper.defaultHeaders = {"App-Language": "en"};
   HttpHelper.timeoutDurationSeconds = 5;
 
-  // Set callback functions
   HttpHelper.onBeforeSend = () {
+    // Perform any pre-send logic here
     print("Request is about to be sent");
+    // Return an HttpError here if your pre-send logic determined that the request should not be sent
+    return null;
   };
 
   HttpHelper.onAfterSend = (GenericResponse response) {
@@ -224,6 +226,43 @@ void main() async {
     print(response.data);
   } else {
     // Note: when `response.isSuccess` is false, `error` and `message` will never be null, so it is save to access them!
+    print(response.error!.message!);
+  }
+}
+```
+
+## Example 5: Using the middleware onBeforeSend to prevent users that are not logged in from entering the private area (fictional example)
+
+```dart
+import 'package:http_helper/http_helper.dart';
+
+import 'typicode_model.dart';
+
+void main() async {
+  HttpHelper.onBeforeSend = () {
+    if (!user.loggedIn) {
+      // By returning an HttpError here, all 'sendRequest' calls will not send the request but will return this error if 'user.loggedIn' is false
+      return HttpError(
+        message: "You must be logged in to enter the private area",
+      )
+    }
+    return null;
+  };
+
+  // Define the URL and path
+  String url = 'accounts.example.com';
+  String path = '/private';
+
+  // Make a GET request
+  final response = await HttpHelper.sendRequest<UserPrivateDetails>(
+      url, path, HttpRequestMethod.get, (response) => UserPrivateDetails.fromJson(response),
+  );
+
+  // Print the response data
+  if (response.isSuccess) {
+    print(response.data);
+  } else {
+    // This will print the message defined in the HttpError above: 'You must be logged in to enter the private area'
     print(response.error!.message!);
   }
 }

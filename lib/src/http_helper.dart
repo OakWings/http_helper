@@ -18,6 +18,7 @@ class HttpHelper {
   static int timeoutDurationSeconds = 10;
 
   /// Default headers for HTTP requests.
+  /// Default is: {"Content-Type": "application/json;charset=UTF-8", "Accept": "application/json"}
   static Map<String, String> defaultHeaders = {
     "Content-Type": "application/json;charset=UTF-8",
     "Accept": "application/json"
@@ -25,6 +26,14 @@ class HttpHelper {
 
   /// A map containing default query parameters that are included in every HTTP request.
   static Map<String, dynamic> defaultParams = {};
+
+  /// A callback function that is invoked immediately before sending the HTTP request.
+  /// This can be used to log details, or execute any pre-send logic.
+  ///
+  /// onBeforeSend can return an HttpError which will be returned by sendRequest, or null.
+  /// If an httpError is returned, the request will not be sent.
+  /// This can be used to perform logic before the request is sent, e.g. check if a user is logged in, or if a token is valid, etc. .
+  static HttpError? Function()? onBeforeSend;
 
   /// A callback function that is invoked after an HTTP request has been sent and a response received.
   /// This is typically used for any request operations like logging, analytics, or response transformation.
@@ -39,16 +48,12 @@ class HttpHelper {
   /// The callback takes an `Exception` parameter, which contains details about the exception that occurred.
   static Function(Exception)? onException;
 
-  /// A callback function that is invoked immediately before sending the HTTP request.
-  /// This can be used to log details, or execute any pre-send logic.
-  static Function? onBeforeSend;
-
   /// A callback function that is invoked when an HTTP request times out.
   /// This is typically used to handle timeout-specific logic, like retrying the request or
   /// showing a timeout error message to the user.
   ///
   /// The callback function takes no parameters, and is invoked when the request exceeds the specified time limit: 'timeoutDurationSeconds'.
-  static Function? onTimeout;
+  static Function()? onTimeout;
 
   /// Main function to make an HTTP request and return a `GenericResponse`.
   static Future<GenericResponse<T>> sendRequest<T>(
@@ -61,8 +66,13 @@ class HttpHelper {
     Map<String, String>? headers,
   }) async {
     try {
-      onBeforeSend?.call(); // Call onBeforeSend if it's not null
+      if (onBeforeSend != null) {
+        final httpError = onBeforeSend!.call();
 
+        if (httpError != null) {
+          GenericResponse<T>(error: httpError, statusCode: -1);
+        }
+      }
       // Merge default and custom parameters and headers
       final params = {...defaultParams, ...?queryParameters};
       final header = {...defaultHeaders, ...?headers};
@@ -70,6 +80,12 @@ class HttpHelper {
       if (httpRequestMethod == HttpRequestMethod.get) {
         // "Content-Type" is removed for GET requests
         header.remove("Content-Type");
+        // Body is not allowed on get requests
+        if (body != null) {
+          body = null;
+          print(
+              "http_helper: body not allowed on get requests -> reset body to null. Request was: 'get $url$path'");
+        }
       }
 
       // Convert all values in params to String because in Dart,
@@ -127,12 +143,20 @@ class HttpHelper {
   /// Handles the HTTP response and converts it into a `GenericResponse`. Default encoding is UTF-8, this cannot be changed.
   static GenericResponse<T> _handleResponse<T>(
       http.Response response, T Function(dynamic response) converter) {
-    var body = const Utf8Decoder().convert(response.bodyBytes);
+    String body = "";
+
+    try {
+      body = const Utf8Decoder().convert(response.bodyBytes);
+    } on Exception catch (e) {
+      print(body);
+      return httpExceptionError<T>(e);
+    }
+
     // If status code is in 200 range, the request is considered to be successful
     if (response.statusCode >= 200 && response.statusCode < 300) {
-      // Handle successful HTTP response
-      dynamic nullableJson;
       try {
+        // Handle successful HTTP response
+        dynamic nullableJson;
         nullableJson = jsonDecode(body);
         final genResponse = GenericResponse(
           data: converter(nullableJson),

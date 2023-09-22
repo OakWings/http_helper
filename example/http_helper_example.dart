@@ -3,36 +3,52 @@ import 'package:http_helper/http_helper.dart';
 import 'typicode_model_example.dart';
 
 void main() async {
-// Define the URL, path, headers and query parameters
+  HttpHelper.defaultHeaders = {"App-Language": "en"};
+  HttpHelper.timeoutDurationSeconds = 5;
+
+  // Set middleware functions
+  HttpHelper.onBeforeSend = () {
+    // Perform any pre-send logic here
+    print("Request is about to be sent");
+    // Return an HttpError here if your pre-send logic determined that the request should not be sent
+    return null;
+  };
+
+  HttpHelper.onAfterSend = (GenericResponse response) {
+    print("Request has been sent, received response: ${response.statusCode}");
+  };
+
+  HttpHelper.onException = (Exception e) {
+    print("An exception occurred: ${e.toString()}");
+  };
+
+  HttpHelper.onTimeout = () {
+    print("Request timed out");
+  };
+
+  // Define the URL and path
   String url = 'jsonplaceholder.typicode.com';
-  String path = '/posts/1';
+  String path = '/posts';
 
-// Define the body
-  final body = """
-    {
-      "userId": 1,
-      "id": 101,
-      "title": "foo",
-      "body": "bar"
-    }
-  """;
+  // Make a GET request
+  var response = await HttpHelper.sendRequest<List<TypicodeModel>>(
+      url, path, HttpRequestMethod.get, (response) {
+    var responseList = response as List;
+    var mappedList = responseList
+        .map((e) => e == null
+            ? null
+            : TypicodeModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+    var withoutNulls =
+        List<TypicodeModel>.from(mappedList.where((e) => e != null));
+    return withoutNulls;
+  });
 
-// Make a POST request
-  var response = await HttpHelper.sendRequest<TypicodeModel>(
-    url,
-    path,
-    HttpRequestMethod.put,
-    (response) => TypicodeModel.fromJson(response),
-    body: body,
-  );
-
-  print(response.statusCode);
-
-// Print the response data
+  // Print the response data
   if (response.isSuccess) {
     print(response.data);
   } else {
-    // Note: when not response.isSuccess, error and message will never be null, so it is save to access them!
+    // Note: when `response.isSuccess` is false, `error` and `message` will never be null, so it is save to access them!
     print(response.error!.message!);
   }
 }
