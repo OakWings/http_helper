@@ -1,3 +1,7 @@
+## 1.2.2
+
+- Corrected minor errors in the README documentation.
+
 ## 1.2.1
 
 - Introduced the HttpHelper.debug flag to toggle debug logging on or off. The default setting is true.

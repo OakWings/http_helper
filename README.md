@@ -49,7 +49,7 @@ void main() async {
     converter: myToJsonConverter,
   );
 
-  // Make the GET request
+  // Make the request
   var response = await HttpHelper.sendRequest<MyModel>(request);
 
   print(response.statusCode);
@@ -95,7 +95,7 @@ void main() async {
     converter: myToJsonConverter,
   );
 
-  // Make the GET request
+  // Make the request
   var response = await HttpHelper.sendRequest<List<MyModel>>(request);
 
   print(response.statusCode);
@@ -144,7 +144,7 @@ void main() async {
     headers: headers,
   );
 
-  // Make the GET request
+  // Make the request
   var response = await HttpHelper.sendRequest<MyModel>(request);
 
   print(response.statusCode);
@@ -195,7 +195,7 @@ void main() async {
     body: body,
   );
 
-  // Make the GET request
+  // Make the request
   var response = await HttpHelper.sendRequest<MyModel>(request);
 
   print(response.statusCode);
@@ -259,7 +259,7 @@ void main() async {
     converter: myToJsonConverter,
   );
 
-  // Make the GET request
+  // Make the request
   var response = await HttpHelper.sendRequest<MyModel>(request);
 
   print(response.statusCode);
@@ -311,7 +311,7 @@ void main() async {
     converter: myToJsonConverter,
   );
 
-  // Make a GET request
+  // Make a request
   final response = await HttpHelper.sendRequest<UserPrivateDetails>(request);
 
   // Print the response data
