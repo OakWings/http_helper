@@ -9,6 +9,10 @@ import 'package:http_helper/src/http_request_method.dart';
 const _httpTimeoutErrorCode = 999;
 
 class HttpHelper {
+  /// Set to `true` to enable debug logging.
+  /// Default is `true`.
+  static bool debug = true;
+
   /// Default timeout duration in seconds for HTTP requests.
   static int timeoutDurationSeconds = 10;
 
@@ -88,8 +92,10 @@ class HttpHelper {
         header.remove("Content-Type");
         // Body is not allowed on get requests
         if (request.body != null) {
-          print(
-              "http_helper: body not allowed on get requests -> reset body to null. Request was: 'get ${request.url}${request.path}'");
+          if (debug) {
+            print(
+                "http_helper: body not allowed on get requests -> reset body to null. Request was: 'get ${request.url}${request.path}'");
+          }
         }
       }
 
@@ -254,14 +260,23 @@ class HttpHelper {
 
   static String _constuctHttpErrorMessage(
       HttpRequest request, String message, String typeString) {
-    return """
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    final msgString = """
 HTTP ${typeString.toUpperCase()}:
              url:\t${request.method.name.toUpperCase()} ${request.url}${request.path}:
        exception:\t$message
          headers:\t${request.headers}
 query parameters:\t${request.queryParameters}
-            body:\t${request.body}
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n""";
+            body:\t${request.body}""";
+
+    if (debug) {
+      print("""
+@@@@@@@@@@@@@ HTTP HELPER DEBUG @@@@@@@@@@@@@
+set HttpHelper.debug = false to disable debug logging
+
+$msgString
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n""");
+    }
+
+    return msgString;
   }
 }

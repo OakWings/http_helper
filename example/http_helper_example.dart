@@ -40,7 +40,7 @@ void main() async {
   final request = HttpRequest(
     url: url,
     path: path,
-    method: HttpRequestMethod.post,
+    method: HttpRequestMethod.get,
     converter: myToJsonConverter,
   );
 
