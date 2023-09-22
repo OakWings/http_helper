@@ -1,52 +1,57 @@
 import 'package:http_helper/http_helper.dart';
 
-import 'typicode_model_example.dart';
+import 'my_model.dart';
 
 void main() async {
   HttpHelper.defaultHeaders = {"App-Language": "en"};
   HttpHelper.timeoutDurationSeconds = 5;
 
   // Set middleware functions
-  HttpHelper.onBeforeSend = () {
+  HttpHelper.onBeforeSend = (request) {
     // Perform any pre-send logic here
-    print("Request is about to be sent");
+    print(
+        "Request ${request.method.name.toUpperCase()} is about to be sent: ${request.url}${request.path}");
     // Return an HttpError here if your pre-send logic determined that the request should not be sent
     return null;
   };
 
-  HttpHelper.onAfterSend = (GenericResponse response) {
+  HttpHelper.onAfterSend = (request, response) {
     print("Request has been sent, received response: ${response.statusCode}");
   };
 
-  HttpHelper.onException = (Exception e) {
-    print("An exception occurred: ${e.toString()}");
+  HttpHelper.onException = (request, exception) {
+    print("An exception occurred: ${exception.toString()}");
   };
 
-  HttpHelper.onTimeout = () {
-    print("Request timed out");
+  HttpHelper.onTimeout = (request) {
+    print("Request ${request.method} timed out: ${request.url}${request.path}");
   };
 
   // Define the URL and path
   String url = 'jsonplaceholder.typicode.com';
   String path = '/posts';
 
-  // Make a GET request
-  var response = await HttpHelper.sendRequest<List<TypicodeModel>>(
-      url, path, HttpRequestMethod.get, (response) {
-    var responseList = response as List;
-    var mappedList = responseList
-        .map((e) => e == null
-            ? null
-            : TypicodeModel.fromJson(e as Map<String, dynamic>))
-        .toList();
-    var withoutNulls =
-        List<TypicodeModel>.from(mappedList.where((e) => e != null));
-    return withoutNulls;
-  });
+  // Define your converter that will be used to convert the response to a MyModel object
+  myToJsonConverter(response) {
+    return MyModel.fromJson(response);
+  }
+
+  // Define the get request
+  final request = HttpRequest(
+    url: url,
+    path: path,
+    method: HttpRequestMethod.post,
+    converter: myToJsonConverter,
+  );
+
+  // Make the GET request
+  var response = await HttpHelper.sendRequest<MyModel>(request);
+
+  print(response.statusCode);
 
   // Print the response data
   if (response.isSuccess) {
-    print(response.data);
+    print(response.data.toString());
   } else {
     // Note: when `response.isSuccess` is false, `error` and `message` will never be null, so it is save to access them!
     print(response.error!.message!);

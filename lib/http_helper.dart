@@ -6,5 +6,7 @@
 library;
 
 export 'src/http_helper.dart';
+export 'src/http_request.dart';
+export 'src/http_request_method.dart';
 export 'src/http_error.dart';
 export 'src/generic_response.dart';

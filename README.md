@@ -29,20 +29,28 @@ Whether you're building a large-scale client application, or you just need to ma
 ```dart
 import 'package:http_helper/http_helper.dart';
 
-import 'typicode_model.dart';
+import 'my_model.dart';
 
 void main() async {
   // Define the URL and path
   String url = 'jsonplaceholder.typicode.com';
   String path = '/posts/1';
 
-  // Make a GET request
-  var response = await HttpHelper.sendRequest<TypicodeModel>(
-    url,
-    path,
-    HttpRequestMethod.get,
-    (response) => TypicodeModel.fromJson(response),
+  // Define your converter that will be used to convert the response to a MyModel object
+  myToJsonConverter(response) {
+    return MyModel.fromJson(response);
+  }
+
+  // Define the get request
+  final request = HttpRequest(
+    url: url,
+    path: path,
+    method: HttpRequestMethod.get,
+    converter: myToJsonConverter,
   );
+
+  // Make the GET request
+  var response = await HttpHelper.sendRequest<MyModel>(request);
 
   print(response.statusCode);
 
@@ -61,32 +69,40 @@ void main() async {
 ```dart
 import 'package:http_helper/http_helper.dart';
 
-import 'typicode_model.dart';
+import 'my_model.dart';
 
 void main() async {
   // Define the URL and path
   String url = 'jsonplaceholder.typicode.com';
   String path = '/posts';
 
-  // Make a GET request
-  var response = await HttpHelper.sendRequest<List<TypicodeModel>>(
-      url, path, HttpRequestMethod.get, (response) {
+  // Define your converter that will be used to convert the response to a MyModel object
+  myToJsonConverter(response) {
     var responseList = response as List;
     var mappedList = responseList
-        .map((e) => e == null
-            ? null
-            : TypicodeModel.fromJson(e as Map<String, dynamic>))
+        .map((e) =>
+            e == null ? null : MyModel.fromJson(e as Map<String, dynamic>))
         .toList();
-    var withoutNulls =
-        List<TypicodeModel>.from(mappedList.where((e) => e != null));
+    var withoutNulls = List<MyModel>.from(mappedList.where((e) => e != null));
     return withoutNulls;
-  });
+  }
+
+  // Define the get request
+  final request = HttpRequest(
+    url: url,
+    path: path,
+    method: HttpRequestMethod.get,
+    converter: myToJsonConverter,
+  );
+
+  // Make the GET request
+  var response = await HttpHelper.sendRequest<List<MyModel>>(request);
 
   print(response.statusCode);
 
   // Print the response data
   if (response.isSuccess) {
-    print(response.data);
+    print(response.data.toString());
   } else {
     // Note: when `response.isSuccess` is false, `error` and `message` will never be null, so it is save to access them!
     print(response.error!.message!);
@@ -99,12 +115,13 @@ void main() async {
 ```dart
 import 'package:http_helper/http_helper.dart';
 
-import 'typicode_model.dart';
+import 'my_model.dart';
 
 void main() async {
-// Define the URL, path, headers and query parameters
+  // Define the URL and path
   String url = 'jsonplaceholder.typicode.com';
   String path = '/posts';
+
   Map<String, String> headers = {"Authorization": "Bearer your_token_here"};
   Map<String, dynamic> queryParams = {
     "userId": 1,
@@ -112,22 +129,34 @@ void main() async {
     "body": "Test Body"
   };
 
-// Make a POST request
-  var response = await HttpHelper.sendRequest<TypicodeModel>(url, path,
-      HttpRequestMethod.post, (response) => TypicodeModel.fromJson(response),
-      headers: headers, queryParameters: queryParams);
+  // Define your converter that will be used to convert the response to a MyModel object
+  myToJsonConverter(response) {
+    return MyModel.fromJson(response);
+  }
+
+  // Define the get request
+  final request = HttpRequest(
+    url: url,
+    path: path,
+    method: HttpRequestMethod.post,
+    converter: myToJsonConverter,
+    queryParameters: queryParams,
+    headers: headers,
+  );
+
+  // Make the GET request
+  var response = await HttpHelper.sendRequest<MyModel>(request);
 
   print(response.statusCode);
 
-// Print the response data
+  // Print the response data
   if (response.isSuccess) {
-    print(response.data);
+    print(response.data.toString());
   } else {
     // Note: when `response.isSuccess` is false, `error` and `message` will never be null, so it is save to access them!
     print(response.error!.message!);
   }
 }
-
 ```
 
 ## Example 3: POST Request with Body
@@ -135,37 +164,45 @@ void main() async {
 ```dart
 import 'package:http_helper/http_helper.dart';
 
-import 'typicode_model_example.dart';
+import 'my_model.dart';
 
 void main() async {
-// Define the URL, path, headers and query parameters
+  // Define the URL and path
   String url = 'jsonplaceholder.typicode.com';
-  String path = '/posts/1';
+  String path = '/posts';
 
-// Define the body
+  // Define the body
   final body = """
     {
       "userId": 1,
-      "id": 101,
+      "id": 10111,
       "title": "foo",
       "body": "bar"
     }
   """;
 
-// Make a POST request
-  var response = await HttpHelper.sendRequest<TypicodeModel>(
-    url,
-    path,
-    HttpRequestMethod.put,
-    (response) => TypicodeModel.fromJson(response),
+  // Define your converter that will be used to convert the response to a MyModel object
+  myToJsonConverter(response) {
+    return MyModel.fromJson(response);
+  }
+
+  // Define the get request
+  final request = HttpRequest(
+    url: url,
+    path: path,
+    method: HttpRequestMethod.post,
+    converter: myToJsonConverter,
     body: body,
   );
 
+  // Make the GET request
+  var response = await HttpHelper.sendRequest<MyModel>(request);
+
   print(response.statusCode);
 
-// Print the response data
+  // Print the response data
   if (response.isSuccess) {
-    print(response.data);
+    print(response.data.toString());
   } else {
     // Note: when `response.isSuccess` is false, `error` and `message` will never be null, so it is save to access them!
     print(response.error!.message!);
@@ -173,57 +210,63 @@ void main() async {
 }
 ```
 
-## Example 4: Using Callbacks/Middleware to handle different stages of an HTTP request
+## Example 4: Using Middleware to handle different stages of an HTTP request
 
 ```dart
 import 'package:http_helper/http_helper.dart';
 
-import 'typicode_model.dart';
+import 'my_model.dart';
 
 void main() async {
   HttpHelper.defaultHeaders = {"App-Language": "en"};
   HttpHelper.timeoutDurationSeconds = 5;
 
-  HttpHelper.onBeforeSend = () {
+  // Set middleware functions
+  HttpHelper.onBeforeSend = (request) {
     // Perform any pre-send logic here
-    print("Request is about to be sent");
+    print(
+        "Request ${request.method.name.toUpperCase()} is about to be sent: ${request.url}${request.path}");
     // Return an HttpError here if your pre-send logic determined that the request should not be sent
     return null;
   };
 
-  HttpHelper.onAfterSend = (GenericResponse response) {
+  HttpHelper.onAfterSend = (request, response) {
     print("Request has been sent, received response: ${response.statusCode}");
   };
 
-  HttpHelper.onException = (Exception e) {
-    print("An exception occurred: ${e.toString()}");
+  HttpHelper.onException = (request, exception) {
+    print("An exception occurred: ${exception.toString()}");
   };
 
-  HttpHelper.onTimeout = () {
-    print("Request timed out");
+  HttpHelper.onTimeout = (request) {
+    print("Request ${request.method} timed out: ${request.url}${request.path}");
   };
 
   // Define the URL and path
   String url = 'jsonplaceholder.typicode.com';
   String path = '/posts';
 
-  // Make a GET request
-  var response = await HttpHelper.sendRequest<List<TypicodeModel>>(
-      url, path, HttpRequestMethod.get, (response) {
-    var responseList = response as List;
-    var mappedList = responseList
-        .map((e) => e == null
-            ? null
-            : TypicodeModel.fromJson(e as Map<String, dynamic>))
-        .toList();
-    var withoutNulls =
-        List<TypicodeModel>.from(mappedList.where((e) => e != null));
-    return withoutNulls;
-  });
+  // Define your converter that will be used to convert the response to a MyModel object
+  myToJsonConverter(response) {
+    return MyModel.fromJson(response);
+  }
+
+  // Define the get request
+  final request = HttpRequest(
+    url: url,
+    path: path,
+    method: HttpRequestMethod.post,
+    converter: myToJsonConverter,
+  );
+
+  // Make the GET request
+  var response = await HttpHelper.sendRequest<MyModel>(request);
+
+  print(response.statusCode);
 
   // Print the response data
   if (response.isSuccess) {
-    print(response.data);
+    print(response.data.toString());
   } else {
     // Note: when `response.isSuccess` is false, `error` and `message` will never be null, so it is save to access them!
     print(response.error!.message!);
@@ -239,7 +282,9 @@ import 'package:http_helper/http_helper.dart';
 import 'typicode_model.dart';
 
 void main() async {
-  HttpHelper.onBeforeSend = () {
+
+  // Set middleware functions
+  HttpHelper.onBeforeSend = (request) {
     if (!user.loggedIn) {
       // By returning an HttpError here, all 'sendRequest' calls will not send the request but will return this error if 'user.loggedIn' is false
       return HttpError(
@@ -253,10 +298,21 @@ void main() async {
   String url = 'accounts.example.com';
   String path = '/private';
 
-  // Make a GET request
-  final response = await HttpHelper.sendRequest<UserPrivateDetails>(
-      url, path, HttpRequestMethod.get, (response) => UserPrivateDetails.fromJson(response),
+  // Define your converter that will be used to convert the response to a MyModel object
+  myToJsonConverter(response) {
+    return UserPrivateDetails.fromJson(response);
+  }
+
+  // Define the get request
+  final request = HttpRequest(
+    url: url,
+    path: path,
+    method: HttpRequestMethod.get,
+    converter: myToJsonConverter,
   );
+
+  // Make a GET request
+  final response = await HttpHelper.sendRequest<UserPrivateDetails>(request);
 
   // Print the response data
   if (response.isSuccess) {

@@ -1,3 +1,12 @@
+## 1.2.0
+
+- Updated README and examples for better clarity and usage guidance.
+- Introduced a HttpRequest class
+- Modified the sendRequest function to now expect an HttpRequest object as a parameter.
+- Introduced a new middleware function, onError, for additional error-handling capabilities.
+- Enhanced all existing middleware functions — onBeforeSend, onAfterSend, onException, and onTimeout — to now accept an HttpRequest object as an argument.
+- Exceptions and errors are now automatically logged to the console to improve debuggability.
+
 ## 1.1.1
 
 - Improved doc comments
