@@ -76,13 +76,6 @@ class HttpHelper {
     HttpRequest<T> request,
   ) async {
     try {
-      if (onBeforeSend != null) {
-        final httpError = onBeforeSend!.call(request);
-
-        if (httpError != null) {
-          GenericResponse<T>(error: httpError, statusCode: -1);
-        }
-      }
       // Merge default and custom parameters and headers
       final params = {...defaultParams, ...?request.queryParameters};
       final header = {...defaultHeaders, ...?request.headers};
@@ -107,9 +100,29 @@ class HttpHelper {
         (key, value) => MapEntry(key, value.toString()),
       );
 
-      // Construct the URI for the request
+      // Construct the URI for the request with the query parameters
       final uri = Uri.https(
           request.url, request.path, params.isEmpty ? null : stringParams);
+
+      // We cannot modify the given request, so we have to create a new one to apply modified headers
+      final updatedRequest = HttpRequest(
+        url: request.url,
+        path: request.path,
+        method: request.method,
+        converter: request.converter,
+        body: request.body,
+        queryParameters: params,
+        headers: header,
+      );
+      request = updatedRequest;
+
+      if (onBeforeSend != null) {
+        final httpError = onBeforeSend!.call(request);
+
+        if (httpError != null) {
+          GenericResponse<T>(error: httpError, statusCode: -1);
+        }
+      }
 
       // Make the HTTP request based on the specified method
       final response = await _httpRequest(uri, request);

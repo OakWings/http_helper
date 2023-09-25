@@ -1,3 +1,7 @@
+## 1.2.3
+
+- Fixed a case where combined headers were not properly updated.
+
 ## 1.2.2
 
 - Corrected minor errors in the README documentation.
