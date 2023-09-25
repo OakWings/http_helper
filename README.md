@@ -41,7 +41,7 @@ void main() async {
     return MyModel.fromJson(response);
   }
 
-  // Define the get request
+  // Define the request
   final request = HttpRequest(
     url: url,
     path: path,
@@ -87,7 +87,7 @@ void main() async {
     return withoutNulls;
   }
 
-  // Define the get request
+  // Define the request
   final request = HttpRequest(
     url: url,
     path: path,
@@ -134,7 +134,7 @@ void main() async {
     return MyModel.fromJson(response);
   }
 
-  // Define the get request
+  // Define the request
   final request = HttpRequest(
     url: url,
     path: path,
@@ -186,7 +186,7 @@ void main() async {
     return MyModel.fromJson(response);
   }
 
-  // Define the get request
+  // Define the request
   final request = HttpRequest(
     url: url,
     path: path,
@@ -251,7 +251,7 @@ void main() async {
     return MyModel.fromJson(response);
   }
 
-  // Define the get request
+  // Define the request
   final request = HttpRequest(
     url: url,
     path: path,
@@ -303,7 +303,7 @@ void main() async {
     return UserPrivateDetails.fromJson(response);
   }
 
-  // Define the get request
+  // Define the request
   final request = HttpRequest(
     url: url,
     path: path,
