@@ -1,7 +1,7 @@
 name: http_helper
 description: The http_helper is a powerful yet easy-to-use HTTP networking library for Dart, designed to encapsulate the complexities of making HTTP requests in client applications.
 
-version: 1.2.3
+version: 1.2.4
 
 repository: https://github.com/OakWings/http_helper
 
@@ -10,9 +10,9 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
-  json_serializable: ^6.7.0
+  json_serializable: ^6.7.1
   json_annotation: ^4.8.1
-  http: ^1.1.0
+  http: ^1.2.0
 
 dev_dependencies:
   lints: ^2.0.0

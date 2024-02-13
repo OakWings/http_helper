@@ -1,3 +1,5 @@
+## 1.2.4
+- Update dependencies
 ## 1.2.3
 
 - Fixed a case where combined headers were not properly updated.
