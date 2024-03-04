@@ -188,14 +188,16 @@ class HttpHelper {
   ) {
     String body = "";
 
-    try {
-      body = const Utf8Decoder().convert(response.bodyBytes);
-    } on Exception catch (e) {
-      onException?.call(request, e);
-      return _httpException<T>(request, e);
-    } on Error catch (e) {
-      onError?.call(request, e);
-      return _httpError<T>(request, e);
+    if (response.bodyBytes.isNotEmpty) {
+      try {
+        body = const Utf8Decoder().convert(response.bodyBytes);
+      } on Exception catch (e) {
+        onException?.call(request, e);
+        return _httpException<T>(request, e);
+      } on Error catch (e) {
+        onError?.call(request, e);
+        return _httpError<T>(request, e);
+      }
     }
 
     // If status code is in 200 range, the request is considered to be successful
