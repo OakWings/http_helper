@@ -205,7 +205,9 @@ class HttpHelper {
       try {
         // Handle successful HTTP response
         dynamic nullableJson;
-        nullableJson = jsonDecode(body);
+        if (body.isNotEmpty) {
+          nullableJson = jsonDecode(body);
+        }
         final data = converter(nullableJson);
         final genResponse = GenericResponse(
           data: data,

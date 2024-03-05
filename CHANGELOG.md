@@ -1,3 +1,8 @@
+## 1.2.6
+
+- Fixed an issue where attempting to decode an empty response body resulted in
+  an HttpException.
+
 ## 1.2.5
 
 - Fixed: An HttpException could be triggered due to the backend unexpectedly
